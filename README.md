@@ -18,13 +18,14 @@ Initial investigation of the radio in the outside temperature guage was via a DV
   alt="rtl_433 command line capture">
 </figure>
 
-### Frequency tuning
+### Frequency tuning - in progress
 
 The CC1101 modules can be a little off with the frequency.  This affects the quality of the received packets and can dramatically decrease the range at which you can receive packets from the Geeney.
 You can buy a better Xtal like an Epson X1E0000210666 from Farnell (2471832), or change the frequency in initialisation. For my module I needed to set the frequency to 433.29MHz, I wasn't prepared to do any SMD soldering!
 
 Below are some suggested values.  The default is/should be 433290000 Hz.
 
+#### Ignore for now, work in progress #####
 |    Freq   | Dec     | HEX    |
 |:---------:|---------|--------|
 | 868425000 | 2188965 | 2166A5 |
@@ -48,13 +49,6 @@ radio.writeRegister(CC1101_FREQ0, 0x6a);
 ```
 
 Look at the LQI value in the debug output for an indication of received packet quality, lower is better.  
-
-When looking at the debug output of the received packets are printed. The third byte represents the source of the packet:
-- 01 - Clamp sensor / sender
-- 21 - iBoost Buddy sending a request
-- 22 - iBoost main unit metrics data
-
-You should optimize receive quality for the iBoost main unit (0x22). I don't have in iBoost Buddy so I never saw any of those packets.
 
 ### CC1101 Packet Format
 
