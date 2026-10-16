@@ -27,6 +27,22 @@ Decoded JSON Fields
 - humidity: Relative humidity (0–100%, optional for temperature-only models)
 - test: Test button flag if pressed
 
+Nexus-TH protocol in rtl_433 decodes 36-bit OOK (On-Off Keying) Pulse Position Modulated (PPM) wireless sensors operating around 433.92 MHz
+
+Modulation & Transmission
+- Modulation: OOK pulse PPM
+- Timing: ~500 µs pulse, ~1000 µs gap for binary 0, ~2000 µs gap for binary 1, and ~4000 µs sync gap.
+- Repetition: Transmits 36 bits 12 times per burst (for Nexus-T/TH).
+
+Decoded JSON Fields
+- model: Nexus-T or Nexus-TH (also covers compatible brands like FreeTec, Solight, TFA Dostmann, infactory, and Bresser)
+- id: Unique sensor ID / house code
+- channel: Channel number (typically 1 to 3)
+- battery_ok: Battery status flag (1 for ok, 0 for low)
+- temperature_C: Temperature in Celsius
+- humidity: Relative humidity (0–100%, optional for temperature-only models)
+- test: Test button flag if pressed
+
 <figure>
   <figcaption>rtl_433 command line</figcaption>
   <img
@@ -36,7 +52,11 @@ Decoded JSON Fields
 
 ### Frequency tuning - in progress
 
+<<<<<<< HEAD
 The CC1101 modules can be a little off with the frequency.  This affects the quality of the received packets and can dramatically decrease the range at which you can receive packets from the Geevon.
+=======
+The CC1101 modules can be a little off with the frequency.  This affects the quality of the received packets and can dramatically decrease the range at which you can receive packets from the Geeney.
+>>>>>>> cf96a575047a22fd92efa32bb0e40e44cdb0e1de
 You can buy a better Xtal like an Epson X1E0000210666 from Farnell (2471832), or change the frequency in initialisation. For my module I needed to set the frequency to 433.92MHz, I wasn't prepared to do any SMD soldering!
 
 Below are some suggested values.  The default is/should be 433920000 Hz.
