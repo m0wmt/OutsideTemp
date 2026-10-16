@@ -1,6 +1,6 @@
 # Outside-Temperature
 
-Quick program using a ESP32 S3 Mini and CC1101 (433MHz) transceiver to read the temperature from an outside Geeney temperature gauge.
+Quick program using a ESP32 S3 Mini and CC1101 (433MHz) transceiver to read the temperature from an outside Geevon temperature gauge.
 
 This project has been inspired by a simular project by [lakrep](https://github.com/lakrep/the-receiver).
 
@@ -9,7 +9,7 @@ This project will be part of a bigger project for a touchscreen program in the f
 The code will be written using VSCode and the PlatformIO plug-in.
 
 ### Signal Investigation
-Initial investigation of the radio in the outside temperature guage was via a DVD-T receiver using rtl_433, a generic RF data receiver and decoder for ISM band devices using RTL-SDR and SoapySDR. 
+Initial investigation of the radio in the outside temperature guage was via a DVD-T receiver using rtl_433, a generic RF data receiver and decoder for ISM band devices using RTL-SDR and SoapySDR. What it found was Nexus-TH signals and not Geevon ones!  Seems that the Geevon temperature monitor I have has an external unit with a Nexus-TH protocol.
 
 Nexus-TH protocol in rtl_433 decodes 36-bit OOK (On-Off Keying) Pulse Position Modulated (PPM) wireless sensors operating around 433.92 MHz
 
@@ -36,7 +36,7 @@ Decoded JSON Fields
 
 ### Frequency tuning - in progress
 
-The CC1101 modules can be a little off with the frequency.  This affects the quality of the received packets and can dramatically decrease the range at which you can receive packets from the Geeney.
+The CC1101 modules can be a little off with the frequency.  This affects the quality of the received packets and can dramatically decrease the range at which you can receive packets from the Geevon.
 You can buy a better Xtal like an Epson X1E0000210666 from Farnell (2471832), or change the frequency in initialisation. For my module I needed to set the frequency to 433.92MHz, I wasn't prepared to do any SMD soldering!
 
 Below are some suggested values.  The default is/should be 433920000 Hz.
