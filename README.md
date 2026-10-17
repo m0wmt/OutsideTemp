@@ -9,7 +9,7 @@ This project will be part of a bigger project for a touchscreen program in the f
 The code will be written using VSCode and the PlatformIO plug-in.
 
 ### Signal Investigation
-Initial investigation of the radio in the outside temperature guage was via a DVD-T receiver using rtl_433, a generic RF data receiver and decoder for ISM band devices using RTL-SDR and SoapySDR. What it found was Nexus-TH signals and not Geevon ones!  Seems that the Geevon temperature monitor I have has an external unit usign the Nexus-TH protocol.
+Initial investigation of the radio in the outside temperature guage was via a DVD-T receiver using [rtl_433](https://github.com/merbanan/rtl_433), a generic RF data receiver and decoder for ISM band devices using RTL-SDR and SoapySDR. What it found was Nexus-TH signals and not Geevon ones!  Seems that the Geevon temperature monitor I have has an external unit usign the Nexus-TH protocol.
 
 Nexus-TH protocol in rtl_433 decodes 36-bit OOK (On-Off Keying) Pulse Position Modulated (PPM) wireless sensors operating around 433.92 MHz
 
@@ -61,7 +61,9 @@ Below are some suggested values.  The default is/should be 433920000 Hz.
 #### Ignore for now, work in progress #####
 |    Freq   | Dec     | HEX    |
 |:---------:|---------|--------|
-| 868425000 | 2188965 | 2166A5 |
+| 433920000 | 1093745 | 10B071 |
+
+
 | 868400000 | 2188902 | 216666 |
 | 868375000 | 2188839 | 216627 |
 | 868350000 | 2188776 | 2165E8 |
@@ -76,9 +78,9 @@ Below are some suggested values.  The default is/should be 433920000 Hz.
 
 To make these changes you will need to change these lines:
 ```
-radio.writeRegister(CC1101_FREQ2, 0x21);
-radio.writeRegister(CC1101_FREQ1, 0x65);
-radio.writeRegister(CC1101_FREQ0, 0x6a);
+radio.writeRegister(CC1101_FREQ2, 0x10);
+radio.writeRegister(CC1101_FREQ1, 0xB0);
+radio.writeRegister(CC1101_FREQ0, 0x71);
 ```
 
 Look at the LQI value in the debug output for an indication of received packet quality, lower is better.  

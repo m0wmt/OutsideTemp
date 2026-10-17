@@ -80,7 +80,37 @@ void setup() {
     }
 
     // Set up the radio
-    radio_setup();    
+    //radio_setup();    
+
+    uint32_t freq = 433.920e6;
+    #define CC1101_CRYSTAL_FREQUENCY 26000000ul
+
+    // We use uint64_t as the <<16 overflows uint32_t
+    // however the division with 26000000 allows the final
+    // result to be uint32 again
+    uint32_t reg_freq = ((uint64_t)freq<<16) / CC1101_CRYSTAL_FREQUENCY;
+    //
+    // this is split into 3 bytes that are written to 3 different registers on the CC1101
+    uint8_t FREQ2 = (reg_freq>>16) & 0xFF;   // high byte, bits 7..6 are always 0 for this register
+    uint8_t FREQ1 = (reg_freq>>8) & 0xFF;    // middle byte
+    uint8_t FREQ0 = reg_freq & 0xFF;         // low byte
+
+    Serial.print("FREQ2=");Serial.println(FREQ2, HEX);
+    Serial.print("FREQ1=");Serial.println(FREQ1, HEX);
+    Serial.print("FREQ0=");Serial.println(FREQ0,HEX);
+    
+    uint32_t realfreq=((uint32_t)FREQ2<<16)+((uint32_t)FREQ1<<8)+(uint32_t)FREQ0;
+    realfreq=((uint64_t)realfreq*CC1101_CRYSTAL_FREQUENCY)>>16;
+    Serial.print("Real frequency = ");
+    Serial.println(realfreq);
+
+    /*
+        Output from  above frequency setting code:
+            FREQ2=10
+            FREQ1=B0
+            FREQ0=71
+            Real frequency = 433919830        
+    */
 }
 
 
@@ -175,16 +205,16 @@ static void update_local_time(void) {
 
 
 /**
- * @brief Set up the CC1101 for receiving geeney packets
+ * @brief Set up the CC1101 for receiving geevon (Nexus-TH) packets 
  * 
  */
 void radio_setup() {
     radio.reset();
-    radio.begin(433.290e6); // Freq, do not forget the "e6"
+    radio.begin(433.920e6); // Freq, do not forget the "e6"
     radio.setMaxPktSize(61);
-    radio.writeRegister(CC1101_FREQ2, 0x21); 
-    radio.writeRegister(CC1101_FREQ1, 0x65);
-    radio.writeRegister(CC1101_FREQ0, 0xe8);
+    radio.writeRegister(CC1101_FREQ2, 0x10); 
+    radio.writeRegister(CC1101_FREQ1, 0xB0);   // 10B071 = real freq. 433919830
+    radio.writeRegister(CC1101_FREQ0, 0x71);
     radio.writeRegister(CC1101_FSCTRL1, 0x08); // fif=203.125kHz
     radio.writeRegister(CC1101_FSCTRL0, 0x00); // No offset
     radio.writeRegister(CC1101_MDMCFG4, 0x5B); // CHANBW_E = 1 CHANBW_M=1 BWchannel =325kHz   DRATE_E=11
@@ -200,9 +230,15 @@ void radio_setup() {
     //radio.writeRegister(CC1101_MCSM1, 0x00); // Channel clear = always Return to idle after packet reception Return to idle after transmission
     radio.writeRegister(CC1101_FOCCFG, 0x1D); // The frequency compensation loop gain to be used before a sync word is detected = 4K The frequency compensation loop gain to be used after a sync word is Detected = K/2 The saturation point for the frequency offset compensation algorithm = ±BWchannel /8
     radio.writeRegister(CC1101_BSCFG, 0x1C); // The clock recovery feedback loop integral gain to be used before a sync word is detected = KI The clock recovery feedback loop proportional gain to be used before a sync word is detected = 2KP The clock recovery feedback loop integral gain to be used after a sync word is Detected = KI/2 The clock recovery feedback loop proportional gain to be used after a sync word is detected = KP The saturation point for the data rate offset compensation algorithm = ±0 (No data rate offset compensation performed)
-    radio.writeRegister(CC1101_AGCCTRL2, 0xC7); // The 3 highest DVGA gain settings can not be used. Maximum allowable LNA + LNA 2 gain relative to the maximum possible gain. Target value for the averaged amplitude from the digital channel filter = 42dB
-    radio.writeRegister(CC1101_AGCCTRL1, 0x00); // LNA 2 gain is decreased to minimum before decreasing LNA gain Relative carrier sense threshold disabled Sets the absolute RSSI threshold for asserting carrier sense to MAGN_TARGET
-    radio.writeRegister(CC1101_AGCCTRL0, 0xB2); // Sets the level of hysteresis on the magnitude deviation (internal AGC signal that determine gain changes) to Medium hysteresis, medium asymmetric dead zone, medium gain Sets the number of channel filter samples from a gain adjustment has been made until the AGC algorithm starts accumulating new samples to 32 samples AGC gain never frozen
+
+    // Mode = ASK_OOK
+    radio.writeRegister(CC1101_AGCCTRL2, 0x07); // MAGN_TARGET (DN022: 0x03-0x07)
+    radio.writeRegister(CC1101_AGCCTRL1, 0x00); // AGC_LNA_PRIORITY = 0
+    radio.writeRegister(CC1101_AGCCTRL0, 0x91); // 8 dB ASK decision boundary
+    // radio.writeRegister(CC1101_AGCCTRL2, 0xC7); // The 3 highest DVGA gain settings can not be used. Maximum allowable LNA + LNA 2 gain relative to the maximum possible gain. Target value for the averaged amplitude from the digital channel filter = 42dB
+    // radio.writeRegister(CC1101_AGCCTRL1, 0x00); // LNA 2 gain is decreased to minimum before decreasing LNA gain Relative carrier sense threshold disabled Sets the absolute RSSI threshold for asserting carrier sense to MAGN_TARGET
+    // radio.writeRegister(CC1101_AGCCTRL0, 0xB2); // Sets the level of hysteresis on the magnitude deviation (internal AGC signal that determine gain changes) to Medium hysteresis, medium asymmetric dead zone, medium gain Sets the number of channel filter samples from a gain adjustment has been made until the AGC algorithm starts accumulating new samples to 32 samples AGC gain never frozen
+
     radio.writeRegister(CC1101_FSCAL3, 0xEA); // Detailed calibration
     radio.writeRegister(CC1101_FSCAL2, 0x2A); //
     radio.writeRegister(CC1101_FSCAL1, 0x00); //
@@ -226,9 +262,4 @@ void radio_setup() {
     radio.setIDLEstate();                 // Was set to receive, moved so set when all setup of program is finished
 
     ESP_LOGI(TAG, "CC1101 set up complete, radio set to idle state");
-    char tx_item[] = "C1101 set up complete";
-    UBaseType_t res =  xRingbufferSend(buf_handle, tx_item, sizeof(tx_item), pdMS_TO_TICKS(0));
-    if (res != pdTRUE) {
-        ESP_LOGE(TAG, "Failed to send Ringbuffer item");
-    }
 }
