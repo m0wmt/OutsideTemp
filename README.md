@@ -98,3 +98,7 @@ Look at the LQI value in the debug output for an indication of received packet q
 - Use Barr Group [C coding standards](https://barrgroup.com/sites/default/files/barr_c_coding_standard_2018.pdf)
 
 ### Notes
+
+![ESP32 Zero Mini](./images/esp32-mini.jpg)
+
+![C1101](./images/cc1101.jpg)
